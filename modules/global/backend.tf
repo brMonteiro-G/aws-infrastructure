@@ -6,10 +6,10 @@ terraform {
     }
   }
  backend "s3" {
-    bucket         = "my-terraform-state-bucket"
+    bucket         = "backend-s3-terraform"
     key            = "global/terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "terraform-lock"
+    dynamodb_table = "terraform-lock-table"
   }
 
 }

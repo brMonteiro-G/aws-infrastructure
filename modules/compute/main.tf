@@ -14,7 +14,7 @@ resource "aws_security_group" "private-sec-group" {
     from_port   = 53
     to_port     = 53
     protocol    = "udp"
-    security_groups = "sg-id-mgmt"
+    security_groups = ["sg-id-mgmt"]
     cidr_blocks = ["0.0.0.0/0"] # Allow HTTP traffic
   }
 
@@ -41,7 +41,7 @@ resource "aws_security_group" "management-sec-group" {
     from_port   = 53
     to_port     = 53
     protocol    = "udp"
-    security_groups = "sg-id-"
+    security_groups = ["sg-id-management"]
     cidr_blocks = ["0.0.0.0/0"] # Allow HTTP traffic
   }
 
@@ -145,7 +145,7 @@ resource "aws_security_group_rule" "http_public_access" {
 
 
 
-resource "aws_security_group_rule" "ssh_from_my_ip" {
+resource "aws_security_group_rule" "ssh_from_my_ip_management" {
   type        = "ingress"
   from_port   = 22
   to_port     = 22
@@ -161,7 +161,7 @@ resource "aws_security_group_rule" "icmp_from_source_sg" {
   from_port              = -1  # All ICMP types
   to_port                = -1  # All ICMP types
   protocol               = "icmp"
-  security_group_id      = aws_security_group.mgmt_sg.id
+  security_group_id      = aws_security_group.private-sec-group
   source_security_group_id = aws_security_group.private-sec-group  # Allow ICMP from source security group
   description            = "Test connection from source security group"
 }
@@ -172,7 +172,7 @@ resource "aws_security_group_rule" "icmp_from_source_sg" {
 resource "aws_instance" "jump-server" {
   ami             = var.ami_id
   instance_type   = var.instance_type
-  security_groups = [aws_security_group.ec2_sg.name]
+  security_groups = [aws_security_group.management-sec-group]
 
   # EC2 Tags
   tags = {
@@ -193,7 +193,7 @@ resource "aws_instance" "jump-server" {
 resource "aws_instance" "web-server" {
   ami             = var.ami_id
   instance_type   = var.instance_type
-  security_groups = [aws_security_group.ec2_sg.name]
+  security_groups = [aws_security_group.public-sec-group]
 
   # EC2 Tags
   tags = {
@@ -214,7 +214,7 @@ resource "aws_instance" "web-server" {
 resource "aws_instance" "database-server" {
   ami             = var.ami_id
   instance_type   = var.instance_type
-  security_groups = [aws_security_group.ec2_sg.name]
+  security_groups = [aws_security_group.private-sec-group]
 
   # EC2 Tags
   tags = {
@@ -233,7 +233,7 @@ resource "aws_instance" "database-server" {
 
 # EBS Volume (Optional - If you'd like to create a separate volume)
 resource "aws_ebs_volume" "example_volume" {
-  availability_zone = aws_instance.example.availability_zone
+  availability_zone = "us-east-1"
   size              = var.volume_size
   type              = "gp2"
   tags = {
@@ -244,6 +244,6 @@ resource "aws_ebs_volume" "example_volume" {
 # Attach EBS Volume to EC2
 resource "aws_volume_attachment" "example_attachment" {
   device_name = "/dev/sdf"  # Name used in the EC2 instance (Linux)
-  volume_id   = aws_ebs_volume.example_volume.id
-  instance_id = aws_instance.example.id
+  volume_id   = aws_ebs_volume.example_volume
+  instance_id = aws_instance.jump-server
 }

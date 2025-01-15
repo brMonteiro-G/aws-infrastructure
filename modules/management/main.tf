@@ -1,25 +1,25 @@
 
-# Create the AWS Organization
-module "organization" {
-  source = "./modules/organization"
-  feature_set = "ALL"
-}
+# # Create the AWS Organization
+# module "organization" {
+#   source = "./modules/organization"
+#   feature_set = "ALL"
+# }
 
-# Root Account
-module "root_account" {
-  source       = "./accounts"
-  account_name = "RootAccount"
-  email        = "brgabriel.monteiro@gmail.com"
-  role_name    = "OrganizationAccountAccessRole"
-}
+# # Root Account
+# module "root_account" {
+#   source       = "./accounts"
+#   account_name = "RootAccount"
+#   email        = "brgabriel.monteiro@gmail.com"
+#   role_name    = "OrganizationAccountAccessRole"
+# }
 
-# Admin Account
-module "admin_account" {
-  source       = "./accounts"
-  account_name = "AdminAccount"
-  email        = "admin@example.com"
-  role_name    = "AdminAccessRole"
-}
+# # Admin Account
+# module "admin_account" {
+#   source       = "./accounts"
+#   account_name = "AdminAccount"
+#   email        = "admin@example.com"
+#   role_name    = "AdminAccessRole"
+# }
 
 # Attach SCPs
 resource "aws_organizations_policy_attachment" "admin_scp" {
