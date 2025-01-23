@@ -1,6 +1,6 @@
-# module "network" {
-#   source = "../network"
-# }
+module "network" {
+  source = "../network"
+}
 
 module "compute" {
   source = "../compute"

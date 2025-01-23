@@ -166,6 +166,22 @@ resource "aws_security_group_rule" "icmp_from_source_sg" {
 }
 
 
+resource "aws_ebs_volume" "jump_server_volume" {
+  availability_zone = "us-east-1c"
+  size              = var.volume_size
+  type              = "gp2"
+  tags = {
+    Name = "Example-Volume"
+  }
+}
+
+# Attach EBS Volume to EC2
+resource "aws_volume_attachment" "example_attachment" {
+  device_name = "/dev/sdf"  # Name used in the EC2 instance (Linux)
+  volume_id   = aws_ebs_volume.jump_server_volume.id
+  instance_id = aws_instance.jump-server.id
+  
+}
 
 # EC2 Instance
 resource "aws_instance" "jump-server" {
@@ -176,7 +192,7 @@ resource "aws_instance" "jump-server" {
 
   # EC2 Tags
   tags = {
-    Name = "Example-EC2-Instance"
+    Name = "jump-server-EC2-Instance"
   }
 
   # Attach EBS Volume
@@ -196,7 +212,7 @@ resource "aws_instance" "web-server" {
 
   # EC2 Tags
   tags = {
-    Name = "Example-EC2-Instance"
+    Name = "Web-Server-EC2-Instance"
   }
 
   # Attach EBS Volume
@@ -205,8 +221,7 @@ resource "aws_instance" "web-server" {
     volume_type = "gp2"
   }
 
-  # Optionally, associate an Elastic IP with the instance (if required)
-  # associate_public_ip_address = true
+
 }
 
 # EC2 Instance
@@ -218,7 +233,7 @@ resource "aws_instance" "database-server" {
 
   # EC2 Tags
   tags = {
-    Name = "Example-EC2-Instance"
+    Name = "database-EC2-Instance"
   }
 
   # Attach EBS Volume
@@ -227,24 +242,5 @@ resource "aws_instance" "database-server" {
     volume_type = "gp2"
   }
 
-  # Optionally, associate an Elastic IP with the instance (if required)
-  # associate_public_ip_address = true
 }
 
-# EBS Volume (Optional - If you'd like to create a separate volume)
-resource "aws_ebs_volume" "example_volume" {
-  availability_zone = "us-east-1c"
-  size              = var.volume_size
-  type              = "gp2"
-  tags = {
-    Name = "Example-Volume"
-  }
-}
-
-# Attach EBS Volume to EC2
-resource "aws_volume_attachment" "example_attachment" {
-  device_name = "/dev/sdf"  # Name used in the EC2 instance (Linux)
-  volume_id   = aws_ebs_volume.example_volume.id
-  instance_id = aws_instance.jump-server.id
-  
-}
