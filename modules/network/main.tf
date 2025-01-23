@@ -39,7 +39,7 @@ resource "aws_subnet" "management" {
   tags = {
     Name = "${var.environment}-management-${count.index}"
   }
-}
+} 
 
 
 # Internet Gateway

@@ -6,6 +6,8 @@ module "network"{
 resource "aws_security_group" "private-sec-group" {
   name_prefix = "private-sec-group"
   description = "Allow inbound traffic for EC2 instance"
+  vpc_id            = module.network.vpc_id
+
 
   ingress {
     from_port   = 22
@@ -18,7 +20,7 @@ resource "aws_security_group" "private-sec-group" {
     from_port   = 53
     to_port     = 53
     protocol    = "udp"
-    security_groups = [aws_security_group.management-sec-group.id]
+ //   security_groups = [aws_security_group.management-sec-group.id]
     cidr_blocks = ["0.0.0.0/0"] # Allow HTTP traffic
   }
 
@@ -33,6 +35,7 @@ resource "aws_security_group" "private-sec-group" {
 resource "aws_security_group" "management-sec-group" {
   name_prefix = "management-sec-group"
   description = "Allow inbound traffic for EC2 instance"
+  vpc_id            = module.network.vpc_id
 
   ingress {
     from_port   = 22
@@ -45,7 +48,7 @@ resource "aws_security_group" "management-sec-group" {
     from_port   = 53
     to_port     = 53
     protocol    = "udp"
-    security_groups = [aws_security_group.public-sec-group.id]
+//    security_groups = [aws_security_group.public-sec-group.id]
     cidr_blocks = ["0.0.0.0/0"] # Allow HTTP traffic
   }
 
@@ -60,6 +63,8 @@ resource "aws_security_group" "management-sec-group" {
 resource "aws_security_group" "public-sec-group" {
   name_prefix = "public-sec-group"
   description = "Allow inbound traffic for EC2 instance"
+  vpc_id            = module.network.vpc_id
+
 
   ingress {
     from_port   = 22
@@ -167,7 +172,7 @@ resource "aws_instance" "jump-server" {
   ami             = var.ami_id
   instance_type   = var.instance_type
   security_groups = [aws_security_group.management-sec-group.id]
-  subnet_id = module.network.public_subnet_ids[0]
+  subnet_id = module.network.management_subnet_ids[0]
 
   # EC2 Tags
   tags = {
@@ -180,8 +185,6 @@ resource "aws_instance" "jump-server" {
     volume_type = "gp2"
   }
 
-  # Optionally, associate an Elastic IP with the instance (if required)
-  # associate_public_ip_address = true
 }
 
 # EC2 Instance
@@ -230,7 +233,7 @@ resource "aws_instance" "database-server" {
 
 # EBS Volume (Optional - If you'd like to create a separate volume)
 resource "aws_ebs_volume" "example_volume" {
-  availability_zone = "us-east-1a"
+  availability_zone = "us-east-1c"
   size              = var.volume_size
   type              = "gp2"
   tags = {
@@ -243,4 +246,5 @@ resource "aws_volume_attachment" "example_attachment" {
   device_name = "/dev/sdf"  # Name used in the EC2 instance (Linux)
   volume_id   = aws_ebs_volume.example_volume.id
   instance_id = aws_instance.jump-server.id
+  
 }
